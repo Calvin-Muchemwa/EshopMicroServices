@@ -1,5 +1,5 @@
-using MediatR;
-
+using BuildingBlocks.CQRS;
+using Catalog.API.Models;
 namespace Catalog.API.Products.CreateProduct;
 
 public record CreateProductCommand(
@@ -7,14 +7,27 @@ public record CreateProductCommand(
     List<string> Category,
     string Description,
     string ImageFile,
-    decimal Price) :IRequest<CreateProductResult>;
+    decimal Price) :ICommand<CreateProductResult>;
 
 public record CreateProductResult(Guid Id);
 
-internal class CreateProductCommandHandler :IRequestHandler<CreateProductCommand,CreateProductResult>
+public class CreateProductCommandHandler:ICommandHandler<CreateProductCommand,CreateProductResult>
 {
-    public Task<CreateProductResult> Handle(CreateProductCommand createProductCommand,CancellationToken cancellationToken)
+    public async Task<CreateProductResult> Handle(CreateProductCommand createProductCommand,CancellationToken cancellationToken)
     {
-        
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var product = new Product()
+        {
+            Id = Guid.NewGuid(),
+            Name = createProductCommand.Name,
+            Category = createProductCommand.Category,
+            Description = createProductCommand.Description,
+            ImageFile = createProductCommand.ImageFile,
+            Price = createProductCommand.Price,
+        };
+
+        // Some business Logic
+        return await Task.Run(()=> new CreateProductResult(Guid.NewGuid()));
     }
 }
